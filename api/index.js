@@ -20,6 +20,7 @@ export default async (req, res) => {
     hide_rank,
     show_icons,
     include_all_commits,
+    count_private,
     line_height,
     title_color,
     ring_color,
@@ -67,9 +68,11 @@ export default async (req, res) => {
 
   try {
     const showStats = parseArray(show);
+    const includeAllCommits =
+      parseBoolean(include_all_commits) || parseBoolean(count_private);
     const stats = await fetchStats(
       username,
-      parseBoolean(include_all_commits),
+      includeAllCommits,
       parseArray(exclude_repo),
       showStats.includes("prs_merged") ||
         showStats.includes("prs_merged_percentage"),
@@ -78,8 +81,8 @@ export default async (req, res) => {
     );
 
     let cacheSeconds = clampValue(
-      parseInt(cache_seconds || CONSTANTS.CARD_CACHE_SECONDS, 10),
-      CONSTANTS.SIX_HOURS,
+      parseInt(cache_seconds || CONSTANTS.THIRTY_MINUTES, 10),
+      CONSTANTS.THIRTY_MINUTES,
       CONSTANTS.ONE_DAY,
     );
     cacheSeconds = process.env.CACHE_SECONDS
@@ -101,7 +104,7 @@ export default async (req, res) => {
         hide_border: parseBoolean(hide_border),
         card_width: parseInt(card_width, 10),
         hide_rank: parseBoolean(hide_rank),
-        include_all_commits: parseBoolean(include_all_commits),
+        include_all_commits: includeAllCommits,
         line_height,
         title_color,
         ring_color,
